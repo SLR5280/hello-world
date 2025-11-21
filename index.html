@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legal Calendar Automation</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Legal Calendar Automation</h1>
+            <p class="subtitle">Automatically extract deadlines from litigation scheduling orders</p>
+        </header>
+
+        <main>
+            <!-- Step 1: Upload Document -->
+            <section class="card upload-section" id="uploadSection">
+                <h2>Step 1: Upload Scheduling Order</h2>
+                <div class="upload-area" id="uploadArea">
+                    <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+                    </svg>
+                    <p>Drag and drop your scheduling order here</p>
+                    <p class="upload-subtext">or</p>
+                    <button class="btn btn-secondary" id="selectFileBtn">Select File</button>
+                    <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.txt" hidden>
+                    <p class="upload-formats">Supported formats: PDF, DOC, DOCX, TXT</p>
+                </div>
+                <div class="file-info" id="fileInfo" style="display: none;">
+                    <p><strong>Selected file:</strong> <span id="fileName"></span></p>
+                    <button class="btn btn-primary" id="processBtn">Process Document</button>
+                </div>
+            </section>
+
+            <!-- Step 2: Processing Status -->
+            <section class="card processing-section" id="processingSection" style="display: none;">
+                <h2>Processing Document...</h2>
+                <div class="progress-container">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+                <p class="status-text" id="statusText">Reading document...</p>
+            </section>
+
+            <!-- Step 3: Review Extracted Events -->
+            <section class="card results-section" id="resultsSection" style="display: none;">
+                <h2>Step 2: Review Extracted Deadlines</h2>
+                <p class="results-info">Review and edit the extracted dates and events below. You can modify any details before creating calendar entries.</p>
+
+                <div class="events-container" id="eventsContainer">
+                    <!-- Events will be populated here -->
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-secondary" id="addEventBtn">+ Add Event</button>
+                    <button class="btn btn-primary" id="exportBtn">Export to Calendar</button>
+                </div>
+            </section>
+
+            <!-- Step 4: Export Options -->
+            <section class="card export-section" id="exportSection" style="display: none;">
+                <h2>Step 3: Export to Calendar</h2>
+                <p class="export-info">Choose how you want to add these events to your calendar:</p>
+
+                <div class="export-options">
+                    <div class="export-option">
+                        <h3>Download Calendar File</h3>
+                        <p>Download an .ics file that you can import into any calendar application</p>
+                        <button class="btn btn-primary" id="downloadIcsBtn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+                            </svg>
+                            Download .ICS File
+                        </button>
+                    </div>
+
+                    <div class="export-option">
+                        <h3>Google Calendar</h3>
+                        <p>Automatically add events directly to your Google Calendar</p>
+                        <button class="btn btn-google" id="googleCalendarBtn">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
+                            </svg>
+                            Connect to Google Calendar
+                        </button>
+                    </div>
+
+                    <div class="export-option">
+                        <h3>Outlook Calendar</h3>
+                        <p>Automatically add events directly to your Outlook Calendar</p>
+                        <button class="btn btn-outlook" id="outlookCalendarBtn">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+                            </svg>
+                            Connect to Outlook Calendar
+                        </button>
+                    </div>
+                </div>
+
+                <button class="btn btn-secondary" id="startOverBtn">Process Another Document</button>
+            </section>
+
+            <!-- API Configuration Modal -->
+            <div class="modal" id="apiConfigModal" style="display: none;">
+                <div class="modal-content">
+                    <h2>API Configuration Required</h2>
+                    <p>To use calendar integration features, you need to configure API credentials.</p>
+                    <div class="api-instructions">
+                        <h3>Google Calendar API</h3>
+                        <ol>
+                            <li>Go to <a href="https://console.cloud.google.com/" target="_blank">Google Cloud Console</a></li>
+                            <li>Create a project and enable the Google Calendar API</li>
+                            <li>Create OAuth 2.0 credentials</li>
+                            <li>Enter your Client ID below</li>
+                        </ol>
+                        <input type="text" id="googleClientId" placeholder="Google Client ID" class="config-input">
+
+                        <h3>Microsoft Outlook API</h3>
+                        <ol>
+                            <li>Go to <a href="https://portal.azure.com/" target="_blank">Azure Portal</a></li>
+                            <li>Register an application</li>
+                            <li>Configure API permissions for Calendars.ReadWrite</li>
+                            <li>Enter your Application ID below</li>
+                        </ol>
+                        <input type="text" id="outlookClientId" placeholder="Outlook Application ID" class="config-input">
+                    </div>
+                    <div class="modal-buttons">
+                        <button class="btn btn-secondary" id="closeModalBtn">Close</button>
+                        <button class="btn btn-primary" id="saveConfigBtn">Save Configuration</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>Legal Calendar Automation Tool &copy; 2025 | For legal professionals</p>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="js/pdf-parser.js"></script>
+    <script src="js/date-extractor.js"></script>
+    <script src="js/calendar-generator.js"></script>
+    <script src="js/calendar-api.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
